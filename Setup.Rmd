@@ -1,0 +1,19 @@
+
+---
+title: "Setup"
+output:
+  html_document:
+    toc: true
+---
+
+
+```{r}
+SERVER <- "<TO DO>"
+PASSWORD <- "<TO DO>"
+
+PORT <- 3306
+DATABASE <- "iris_db"
+
+URL <- paste("jdbc:mysql://", SERVER, ":", PORT, "/", DATABASE, sep = "")
+```
+

@@ -1,0 +1,139 @@
+
+---
+title: "sparklyr Write-Read Test"
+output:
+  html_document:
+    toc: true
+---
+
+
+```{r}
+version
+```
+
+
+```{r}
+library(sparklyr)
+library(dplyr)
+```
+
+
+```{r}
+spark_available_versions()
+```
+
+
+```{r}
+sc <- spark_connect(method = "databricks")
+```
+
+
+```{r}
+spark_write_df <- sdf_copy_to(sc = sc, x = iris, overwrite = TRUE)
+```
+
+
+```{r}
+head(spark_write_df)
+```
+
+
+```{run}
+./Setup
+```
+
+```{r}
+spark_write_jdbc(
+  spark_write_df,
+  name = "iris",
+  mode = "overwrite",
+  options = list(
+    url = URL,
+    user = "admin",
+    password = PASSWORD,
+    dbtable = "iris"
+  ),
+  partition_by = NULL
+)
+```
+
+
+```{r}
+spark_read_df <- spark_read_jdbc(
+  sc,
+  name = "iris",
+  options = list(
+    url = URL,
+    user = "admin",
+    password = PASSWORD,
+    dbtable = "iris"
+  )
+)
+```
+
+
+```{r}
+head(spark_read_df)
+```
+
+
+```{r}
+src_tbls(sc)
+```
+
+
+```{r}
+r_write_df <- collect(spark_write_df)
+r_read_df <- collect(spark_read_df)
+```
+
+
+```{r}
+all_equal(r_write_df, r_read_df)
+```
+
+
+```{r}
+options(repr.plot.height = 600)
+```
+
+
+```{r}
+iris_summary <- r_read_df %>%
+  mutate(Sepal_Width = round(Sepal_Width * 2) / 2) %>%
+  group_by(Species, Sepal_Width) %>%
+  summarize(
+    count = n(),
+    Sepal_Length_Mean = mean(Sepal_Length),
+    stdev = sd(Sepal_Length)
+  ) %>%
+  collect
+```
+
+
+```{r}
+library(ggplot2)
+
+ggplot(
+  iris_summary,
+  aes(
+    Sepal_Width,
+    Sepal_Length_Mean,
+    color = Species
+  )
+) +
+geom_line(size = 1.2) +
+geom_errorbar(
+  aes(
+    ymin = Sepal_Length_Mean - stdev,
+    ymax = Sepal_Length_Mean + stdev),
+  width = 0.05
+) +
+geom_text(
+  aes(label = count),
+  vjust = -0.2,
+  hjust = 1.2,
+  color = "black") +
+theme(legend.position = "top")
+```
+

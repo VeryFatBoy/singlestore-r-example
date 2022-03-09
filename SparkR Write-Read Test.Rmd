@@ -1,0 +1,116 @@
+
+---
+title: "SparkR Write-Read Test"
+output:
+  html_document:
+    toc: true
+---
+
+
+```{r}
+version
+```
+
+
+```{r}
+library(SparkR)
+library(dplyr)
+```
+
+
+```{r}
+spark_write_df <- SparkR::createDataFrame(iris)
+```
+
+
+```{r}
+head(spark_write_df)
+```
+
+
+```{run}
+./Setup
+```
+
+```{r}
+SparkR::write.jdbc(
+  spark_write_df,
+  URL,
+  "iris",
+  mode = "overwrite",
+  user = "admin",
+  password = PASSWORD
+)
+```
+
+
+```{r}
+spark_read_df <- SparkR::read.jdbc(
+  URL,
+  "iris",
+  user = "admin",
+  password = PASSWORD
+)
+```
+
+
+```{r}
+head(spark_read_df)
+```
+
+
+```{r}
+r_write_df <- SparkR::as.data.frame(spark_write_df)
+r_read_df <- SparkR::as.data.frame(spark_read_df)
+```
+
+
+```{r}
+all_equal(r_write_df, r_read_df)
+```
+
+
+```{r}
+options(repr.plot.height = 600)
+```
+
+
+```{r}
+iris_summary <- r_read_df %>%
+  mutate(Sepal_Width = round(Sepal_Width * 2) / 2) %>%
+  group_by(Species, Sepal_Width) %>%
+  summarize(
+    count = n(),
+    Sepal_Length_Mean = mean(Sepal_Length),
+    stdev = sd(Sepal_Length)
+  ) %>%
+  collect
+```
+
+
+```{r}
+library(ggplot2)
+
+ggplot(
+  iris_summary,
+  aes(
+    Sepal_Width,
+    Sepal_Length_Mean,
+    color = Species
+  )
+) +
+geom_line(size = 1.2) +
+geom_errorbar(
+  aes(
+    ymin = Sepal_Length_Mean - stdev,
+    ymax = Sepal_Length_Mean + stdev),
+  width = 0.05
+) +
+geom_text(
+  aes(label = count),
+  vjust = -0.2,
+  hjust = 1.2,
+  color = "black") +
+theme(legend.position = "top")
+```
+
