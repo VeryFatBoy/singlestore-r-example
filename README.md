@@ -1,0 +1,2 @@
+# singlestore-r-example
+ 
