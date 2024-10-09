@@ -122,7 +122,7 @@ ggplot(
     color = Species
   )
 ) +
-geom_line(size = 1.2) +
+geom_line(linewidth = 1.2) +
 geom_errorbar(
   aes(
     ymin = Sepal_Length_Mean - stdev,
