@@ -82,7 +82,8 @@ iris_summary <- r_read_df %>%
   summarize(
     count = n(),
     Sepal_Length_Mean = mean(Sepal_Length),
-    stdev = sd(Sepal_Length)
+    stdev = sd(Sepal_Length),
+    .groups = "keep"
   ) %>%
   collect
 ```
@@ -99,7 +100,7 @@ ggplot(
     color = Species
   )
 ) +
-geom_line(size = 1.2) +
+geom_line(linewidth = 1.2) +
 geom_errorbar(
   aes(
     ymin = Sepal_Length_Mean - stdev,
