@@ -8,8 +8,8 @@ output:
 
 
 ```{r}
-SERVER <- "<TO DO>"
-PASSWORD <- "<TO DO>"
+SERVER <- "<host>"
+PASSWORD <- "<password>"
 
 PORT <- 3306
 DATABASE <- "iris_db"
